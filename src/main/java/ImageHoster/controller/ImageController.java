@@ -3,6 +3,7 @@ package ImageHoster.controller;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.AccessibleEntityService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
+    @Autowired
+    private AccessibleEntityService<User> accessibleEntityService;
+
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
     public String getUserImages(Model model) {
@@ -48,9 +52,7 @@ public class ImageController {
     @RequestMapping("/images/{id}")
     public String showImage(@PathVariable("id") Integer imageId, Model model) {
         Image image = imageService.getImage(imageId);
-        model.addAttribute("image", image);
-        model.addAttribute("tags", image.getTags());
-        return "images/image";
+        return showImageHelper(image, model);
     }
 
     //This controller method is called when the request pattern is of type 'images/upload'
@@ -95,6 +97,11 @@ public class ImageController {
     public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
         Image image = imageService.getImage(imageId);
 
+        if (!accessibleEntityService.isAccessible(image)) {
+            model.addAttribute("editError", "Only the owner of the image can edit the image");
+            return showImageHelper(image, model);
+        }
+
         String tags = convertTagsToString(image.getTags());
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
@@ -114,8 +121,12 @@ public class ImageController {
     //The method converts the string to a list of all the tags using findOrCreateTags() method and sets the tags attribute of an image as a list of all the tags
     @RequestMapping(value = "/editImage", method = RequestMethod.PUT)
     public String editImageSubmit(@RequestParam("file") MultipartFile file, @RequestParam("imageId") Integer imageId, @RequestParam("tags") String tags, Image updatedImage, HttpSession session) throws IOException {
-
         Image image = imageService.getImage(imageId);
+
+        if (!accessibleEntityService.isAccessible(image)) {
+            return "redirect:/images/" + image.getId();
+        }
+
         String updatedImageData = convertUploadedFileToBase64(file);
         List<Tag> imageTags = findOrCreateTags(tags);
 
@@ -132,7 +143,7 @@ public class ImageController {
         updatedImage.setDate(new Date());
 
         imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        return "redirect:/images/" + updatedImage.getId();
     }
 
 
@@ -140,11 +151,23 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model) {
+        Image image = imageService.getImage(imageId);
+
+        if (!accessibleEntityService.isAccessible(image)) {
+            model.addAttribute("deleteError", "Only the owner of the image can delete the image");
+            return showImageHelper(image, model);
+        }
+
         imageService.deleteImage(imageId);
         return "redirect:/images";
     }
 
+    private String showImageHelper(Image image, Model model) {
+        model.addAttribute("image", image);
+        model.addAttribute("tags", image.getTags());
+        return "images/image";
+    }
 
     //This method converts the image to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {

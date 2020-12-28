@@ -4,6 +4,7 @@ import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
 import ImageHoster.model.UserProfile;
+import ImageHoster.service.AccessibleEntityService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.junit.Test;
@@ -38,6 +39,9 @@ public class ImageControllerTest {
 
     @MockBean
     private TagService tagService;
+
+    @MockBean
+    private AccessibleEntityService<User> accessibleEntityService;
 
     //This test checks the controller logic to get all the images after the user is logged in the application and checks whether the logic returns the html file 'images.html'
     @Test
@@ -148,7 +152,7 @@ public class ImageControllerTest {
                 .session(session))
                 .andExpect(redirectedUrl("/images"));
     }
-/*
+
     //This test checks the controller logic when the owner of the image sends the GET request to get the form to edit the image and checks whether the logic returns the html file 'images/edit.html'
     @Test
     public void editImageWithOwnerOfTheImage() throws Exception {
@@ -181,6 +185,7 @@ public class ImageControllerTest {
         image.setTags(tags);
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+        Mockito.when(accessibleEntityService.isAccessible(Mockito.any())).thenReturn(true);
 
         this.mockMvc.perform(get("/editImage")
                 .param("imageId", "1")
@@ -213,10 +218,10 @@ public class ImageControllerTest {
         userProfile.setEmailAddress("p@gmail.com");
         userProfile.setFullName("Prerna");
         userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile1);
-        user.setId(2);
-        user.setUsername("Prerna");
-        user.setPassword("password1@@");
+        user1.setProfile(userProfile1);
+        user1.setId(2);
+        user1.setUsername("Prerna");
+        user1.setPassword("password1@@");
 
         Image image = new Image();
         image.setId(1);
@@ -226,6 +231,7 @@ public class ImageControllerTest {
 
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+        Mockito.when(accessibleEntityService.isAccessible(Mockito.any())).thenReturn(false);
 
         this.mockMvc.perform(get("/editImage")
                 .param("imageId", "1")
@@ -257,6 +263,7 @@ public class ImageControllerTest {
         image.setUser(user);
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+        Mockito.when(accessibleEntityService.isAccessible(Mockito.any())).thenReturn(true);
 
         this.mockMvc.perform(delete("/deleteImage")
                 .param("imageId", "1")
@@ -288,10 +295,10 @@ public class ImageControllerTest {
         userProfile.setEmailAddress("p@gmail.com");
         userProfile.setFullName("Prerna");
         userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile1);
-        user.setId(2);
-        user.setUsername("Prerna");
-        user.setPassword("password1@@");
+        user1.setProfile(userProfile1);
+        user1.setId(2);
+        user1.setUsername("Prerna");
+        user1.setPassword("password1@@");
 
         Image image = new Image();
         image.setId(1);
@@ -301,11 +308,11 @@ public class ImageControllerTest {
 
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+        Mockito.when(accessibleEntityService.isAccessible(Mockito.any())).thenReturn(false);
 
         this.mockMvc.perform(delete("/deleteImage")
                 .param("imageId", "1")
                 .session(session))
                 .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
     }
-*/
 }
