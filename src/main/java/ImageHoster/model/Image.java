@@ -11,7 +11,7 @@ import java.util.List;
 //@Table annotation provides more options to customize the mapping.
 //Here the name of the table to be created in the database is explicitly mentioned as 'images'. Hence the table named 'images' will be created in the database with all the columns mapped to all the attributes in 'Image' class
 @Table(name = "images")
-public class Image {
+public class Image implements AccessibleEntity<User> {
 
     //@Id annotation specifies that the corresponding attribute is a primary key
     @Id
