@@ -12,6 +12,7 @@ public class AccessibleEntityService<U> {
     @Autowired
     private HttpSession httpSession;
 
+    // Validates whether the entity is accessible by user or not.
     public boolean isAccessible(AccessibleEntity<U> entity) {
         U user = (U) httpSession.getAttribute("loggeduser");
         return entity.getUser().equals(user);

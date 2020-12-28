@@ -4,6 +4,7 @@ import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
 import ImageHoster.service.AccessibleEntityService;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     private AccessibleEntityService<User> accessibleEntityService;
@@ -166,6 +170,7 @@ public class ImageController {
     private String showImageHelper(Image image, Model model) {
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", commentService.getCommentsByImage(image));
         return "images/image";
     }
 
